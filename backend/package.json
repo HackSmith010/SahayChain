@@ -10,10 +10,14 @@
     "start": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.10"
   }
 }
