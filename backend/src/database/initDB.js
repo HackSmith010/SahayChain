@@ -38,6 +38,5 @@ export const initDB = async () => {
         console.error("❌ Database initialization failed:", err.message);
     } finally {
         console.log("--> Closing database pool.");
-        await pool.end();
     }
 };

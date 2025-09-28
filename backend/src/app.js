@@ -28,4 +28,15 @@ app.use(express.static("public"));
 
 app.use(cookieParser());
 
+import userRoutes from "./routes/auth.route.js";
+import adminRoutes from './routes/admin.route.js';
+
+app.use("/api/users", userRoutes);
+app.use('/api/admin', adminRoutes);
+
+
+app.get("/", (req, res) => {
+    res.send("SahayChain API is alive and running!");
+});
+
 export { app };

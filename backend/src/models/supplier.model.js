@@ -7,7 +7,8 @@ export const createSupplierTable = async () => {
       user_id INT REFERENCES users(id) ON DELETE CASCADE UNIQUE NOT NULL,
       gstin VARCHAR UNIQUE NOT NULL,
       rating FLOAT DEFAULT 0.0,
-      capacity_info TEXT
+      capacity_info TEXT,
+      is_verified BOOLEAN DEFAULT FALSE -- <-- ADD THIS LINE
     );
   `;
   await pool.query(supplierQuery);
@@ -17,7 +18,7 @@ export const createSupplierTable = async () => {
 export const SupplierModel = {
   create: async ({ user_id, gstin }) => {
     const sql = `INSERT INTO suppliers (user_id, gstin) VALUES ($1, $2) RETURNING *;`;
-    const { rows } = await query(sql, [user_id, gstin]);
+    const { rows } = await pool.query(sql, [user_id, gstin]);
     return rows[0];
   },
 };

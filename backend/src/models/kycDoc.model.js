@@ -19,7 +19,7 @@ export const createKycDocTable = async () => {
 export const KycDocModel = {
   create: async ({ user_id, doc_type, s3_uri }) => {
     const sql = `INSERT INTO kyc_docs (user_id, doc_type, s3_uri) VALUES ($1, $2, $3) RETURNING *;`;
-    const { rows } = await query(sql, [user_id, doc_type, s3_uri]);
+    const { rows } = await pool.query(sql, [user_id, doc_type, s3_uri]);
     return rows[0];
   },
 };

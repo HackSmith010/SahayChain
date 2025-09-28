@@ -17,7 +17,7 @@ export const createInstitutionTable = async () => {
 export const InstitutionModel = {
   create: async ({ user_id, reg_number }) => {
     const sql = `INSERT INTO institutions (user_id, reg_number) VALUES ($1, $2) RETURNING *;`;
-    const { rows } = await query(sql, [user_id, reg_number]);
+    const { rows } = await pool.query(sql, [user_id, reg_number]);
     return rows[0];
   },
 };

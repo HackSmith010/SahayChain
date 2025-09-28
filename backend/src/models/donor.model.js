@@ -16,7 +16,7 @@ export const createDonorTable = async () => {
 export const DonorModel = {
   create: async ({ user_id, aadhaar_hash }) => {
     const sql = `INSERT INTO donors (user_id, aadhaar_hash) VALUES ($1, $2) RETURNING *;`;
-    const { rows } = await query(sql, [user_id, aadhaar_hash]);
+    const { rows } = await pool.query(sql, [user_id, aadhaar_hash]);
     return rows[0];
   },
 };

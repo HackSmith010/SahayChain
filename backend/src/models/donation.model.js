@@ -19,7 +19,7 @@ export const createDonationTable = async () => {
 export const DonationModel = {
   create: async ({ donor_id, request_id }) => {
     const sql = `INSERT INTO donations (donor_id, request_id) VALUES ($1, $2) RETURNING *;`;
-    const { rows } = await query(sql, [donor_id, request_id]);
+    const { rows } = await pool.query(sql, [donor_id, request_id]);
     return rows[0];
   }
 };

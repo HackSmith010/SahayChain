@@ -20,7 +20,7 @@ export const createRequestTable = async () => {
 export const RequestModel = {
   create: async ({ institution_id, item, quantity }) => {
     const sql = `INSERT INTO requests (institution_id, item, quantity) VALUES ($1, $2, $3) RETURNING *;`;
-    const { rows } = await query(sql, [institution_id, item, quantity]);
+    const { rows } = await pool.query(sql, [institution_id, item, quantity]);
     return rows[0];
   },
 };
