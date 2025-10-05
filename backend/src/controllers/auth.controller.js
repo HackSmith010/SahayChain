@@ -7,9 +7,21 @@ import { KycDocModel } from "../models/kycDoc.model.js";
 import pool from "../database/db.js";
 
 export const registerUser = async (req, res) => {
+    // --- ADD THIS LOG ---
+    console.log("Received registration payload:", req.body);
+
     try {
-        const { email, password, name, role, phone, reg_number, gstin } =
-            req.body;
+        const {
+            email,
+            password,
+            name,
+            role,
+            phone,
+            reg_number,
+            gstin,
+            doc_type,
+            s3_uri,
+        } = req.body;
 
         const newUser = await UserModel.create({
             email,
@@ -18,7 +30,9 @@ export const registerUser = async (req, res) => {
             role,
             phone,
         });
-        if (!newUser) throw new Error("User creation failed in model.");
+        if (!newUser) {
+            throw new Error("User creation failed in the model layer.");
+        }
 
         let profile;
         switch (role) {
@@ -46,9 +60,18 @@ export const registerUser = async (req, res) => {
                 throw new Error("Invalid user role specified.");
         }
 
+        if (
+            (role === "institution" || role === "supplier") &&
+            doc_type &&
+            s3_uri
+        ) {
+            await KycDocModel.create({ user_id: newUser.id, doc_type, s3_uri });
+        }
+
         res.status(201).json({
-            message: "User registered successfully!",
-            user: { id: newUser.id, email: newUser.email, role: newUser.role },
+            message:
+                "User registered successfully! Please check your email to verify your account before logging in.",
+            user: { id: newUser.id, email: newUser.email },
             profile,
         });
     } catch (error) {
@@ -131,24 +154,23 @@ export const uploadKycDocument = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try {
-        const { id: userId } = req.user;
+        const authId = req.user.id;
 
         const sql = `
-      SELECT 
-        u.id, u.name, u.email, u.phone, u.role, u.is_verified,
-        i.verification_status as institution_status,
-        s.is_verified as supplier_status
-      FROM users u
-      LEFT JOIN institutions i ON u.id = i.user_id
-      LEFT JOIN suppliers s ON u.id = s.user_id
-      WHERE u.id = $1;
-    `;
-        const { rows } = await pool.query(sql, [userId]);
+            SELECT 
+                u.id, u.name, u.email, u.phone, u.role, u.is_verified,
+                i.verification_status as institution_status,
+                s.is_verified as supplier_status
+            FROM users u
+            LEFT JOIN institutions i ON u.id = i.user_id
+            LEFT JOIN suppliers s ON u.id = s.user_id
+            WHERE u.auth_id = $1;
+        `;
+        const { rows } = await pool.query(sql, [authId]);
 
         if (rows.length === 0) {
             return res.status(404).json({ message: "User profile not found." });
         }
-
         res.status(200).json(rows[0]);
     } catch (error) {
         console.error("Get Profile Error:", error.message);
@@ -172,12 +194,16 @@ export const temporaryAdminLogin = async (req, res) => {
 
         const {
             data: { users },
-            error: userError,
-        } = await supabase.auth.admin.listUsers({ email });
-        if (userError || users.length === 0) {
-            throw new Error("Admin user not found.");
+            error: listError,
+        } = await supabase.auth.admin.listUsers();
+        if (listError) throw new Error("Could not list users from Supabase.");
+
+        const adminUser = users.find((user) => user.email === ADMIN_EMAIL);
+        if (!adminUser) {
+            throw new Error(`Admin user with email ${ADMIN_EMAIL} not found.`);
         }
-        const adminUser = users[0];
+
+        console.log(`Found correct admin user: ${adminUser.email}`);
 
         await supabase.auth.admin.updateUserById(adminUser.id, {
             email_confirm: true,

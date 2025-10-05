@@ -4,9 +4,16 @@ import { supabase } from "../utils/supabaseClient.utils.js";
 export const getPendingInstitutions = async (req, res) => {
     try {
         const sql = `
-            SELECT u.id as user_id, u.name, i.id as institution_id, i.reg_number, i.verification_status
+            SELECT 
+                u.id as user_id, 
+                u.name, 
+                i.id as institution_id, 
+                i.reg_number, 
+                i.verification_status,
+                d.s3_uri as document_url
             FROM users u
             JOIN institutions i ON u.id = i.user_id
+            LEFT JOIN kyc_docs d ON u.id = d.user_id
             WHERE i.verification_status = 'pending';
         `;
         const { rows } = await pool.query(sql);
@@ -62,9 +69,16 @@ export const verifyInstitution = async (req, res) => {
 export const getPendingSuppliers = async (req, res) => {
     try {
         const sql = `
-            SELECT u.id as user_id, u.name, s.id as supplier_id, s.gstin, s.is_verified
+            SELECT 
+                u.id as user_id, 
+                u.name, 
+                s.id as supplier_id, 
+                s.gstin, 
+                s.is_verified,
+                d.s3_uri as document_url
             FROM users u
             JOIN suppliers s ON u.id = s.user_id
+            LEFT JOIN kyc_docs d ON u.id = d.user_id
             WHERE s.is_verified = FALSE;
         `;
         const { rows } = await pool.query(sql);
@@ -191,12 +205,10 @@ export const checkGstinDetails = async (req, res) => {
         const response = await axios.get(apiUrl);
 
         if (response.data.flag === false) {
-            return res
-                .status(404)
-                .json({
-                    message: "GSTIN not found or invalid.",
-                    details: response.data,
-                });
+            return res.status(404).json({
+                message: "GSTIN not found or invalid.",
+                details: response.data,
+            });
         }
 
         res.status(200).json({
