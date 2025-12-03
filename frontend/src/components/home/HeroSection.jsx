@@ -28,7 +28,7 @@ export default function HeroSection() {
 
           <p className="max-w-3xl mx-auto text-xl sm:text-2xl text-white/90 leading-relaxed font-light">
             See your impact unfold in real-time. From the moment you give to the
-            moment lives change—
+            moment lives change
             <span className="font-semibold text-white">
               {" "}
               every step is transparent, verified, and meaningful.

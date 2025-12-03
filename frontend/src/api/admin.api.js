@@ -13,13 +13,16 @@ const adminRequest = async (endpoint, method = "GET", body = null, token) => {
   }
   const response = await fetch(`${API_URL}/admin${endpoint}`, options);
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login";
+    }
     const errorData = await response.json();
     throw new Error(errorData.message || `API call to ${endpoint} failed.`);
   }
   return response.json();
 };
 
-// --- Institution Verification ---
 export const getPendingInstitutionsApi = (token) =>
   adminRequest("/institutions/pending", "GET", null, token);
 
@@ -31,7 +34,6 @@ export const verifyInstitutionApi = (institutionId, newStatus, token) =>
     token
   );
 
-// --- Supplier Verification ---
 export const getPendingSuppliersApi = (token) =>
   adminRequest("/suppliers/pending", "GET", null, token);
 
@@ -42,3 +44,9 @@ export const verifySupplierApi = (supplierId, is_verified, token) =>
     { is_verified },
     token
   );
+
+export const manuallyConfirmUserApi = (userId, token) =>
+  adminRequest("/users/confirm", "POST", { userId }, token);
+
+export const getAllUsersApi = (token) =>
+  adminRequest("/users", "GET", null, token);

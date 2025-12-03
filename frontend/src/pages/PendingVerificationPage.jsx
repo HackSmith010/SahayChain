@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react";
+import { Clock,CheckCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import DocumentUploader from "../components/DocumentUploader.jsx";
 
@@ -26,6 +26,23 @@ export default function PendingVerificationPage() {
           registration, please submit your verification documents for our team
           to review.
         </p>
+
+        <div className="space-y-4 text-left border-t border-b py-6">
+          <div className="flex items-center gap-4 text-green-600">
+            <CheckCircle />
+            <span className="font-semibold">Step 1: Account Created</span>
+          </div>
+          <div className="flex items-center gap-4 text-green-600">
+            <CheckCircle />
+            <span className="font-semibold">Step 2: Documents Submitted</span>
+          </div>
+          <div className="flex items-center gap-4 text-yellow-600 animate-pulse">
+            <Clock />
+            <span className="font-semibold">
+              Step 3: Admin Review in Progress
+            </span>
+          </div>
+        </div>
 
         {(role === "institution" || role === "supplier") && (
           <DocumentUploader docType={getDocType()} />
